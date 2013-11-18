@@ -10,7 +10,7 @@
 #include <stdexcept>
 #include <stdlib.h>  // for exit()
 
-#include "listmanip.h"
+#include "listmanip.cpp"
 #include "Lexer.h"
 #include "error_handling.h"
 #include "term_control.h"
@@ -24,12 +24,15 @@ typedef void (*cmd_t)(Lexer);
 void loaddb_cmd(Lexer);
 void print_list_cmd(Lexer);
 void slow_union_cmd(Lexer);
+void slow_union_outputfile_cmd(Lexer);
+void fast_union_outputfile_cmd(Lexer);
 void fast_union_cmd(Lexer);
 void slow_intersect_cmd(Lexer);
+void slow_intersect_outputfile_cmd(Lexer);
+void fast_intersect_outputfile_cmd(Lexer);
 void fast_intersect_cmd(Lexer);
 void bye(Lexer);    // simply quit
 void prompt();
-map<string, vector< vector<Token> > > list_table;
 extern const string usage_msg;                                                  
 
 /**
@@ -44,11 +47,14 @@ int main() {
     cmd_map["bye"]   = &bye;
     cmd_map["quit"]  = &bye;
     cmd_map["loaddb"]   = &loaddb_cmd;
-    cmd_map["print"] = &print_list_cmd;
     cmd_map["slowunion"] = &slow_union_cmd;
+    cmd_map["slowunion outputfile"] = &slow_union_outputfile_cmd;
     cmd_map["fastunion"] = &fast_union_cmd;
+    cmd_map["fastunion outputfile"] = &fast_union_outputfile_cmd;
     cmd_map["slowintersect"] = &slow_intersect_cmd;
+    cmd_map["slowintersect outputfile"] = &slow_intersect_outputfile_cmd;
     cmd_map["fastintersect"] = &fast_intersect_cmd;
+    cmd_map["fastintersect outputfile"] = &fast_intersect_output_cmd;
 
     cout << term_cc(YELLOW) << usage_msg << endl;
 
@@ -77,9 +83,8 @@ int main() {
  *
  * -----------------------------------------------------------------------------
  */
-void _cmd(Lexer lex) 
-{
-
+void fast_intersect_outputfile_cmd(){
+	fast_intersect_outputfile(vector< vector<Token> > vec);
 }
 
 
@@ -88,14 +93,8 @@ void _cmd(Lexer lex)
  * process command 'print vecname'
  * -----------------------------------------------------------------------------
  */
-void print_list_cmd(Lexer lex) 
-{
-    Token tok = lex.next_token();
-    if (tok.type != IDENT || lex.has_more_token())
-        throw runtime_error("SYNTAX: print vecname");
-    if (list_table.find(tok.value) == list_table.end())
-        throw runtime_error(tok.value + " not defined or already destroyed");
-    print_list(list_table[tok.value]);
+void slow_intersect_outputfile_cmd(){
+	slow_intersect_outputfile(vector< vector<Token> > vec);
 }
 
 
@@ -104,21 +103,8 @@ void print_list_cmd(Lexer lex)
  * process command 'slowintersect vecname1 vecname2'
  * -----------------------------------------------------------------------------
  */
-void slow_intersect_cmd(Lexer lex) 
-{
-    vector<Token> vec = lex.tokenize();
-    if (vec.size() != 2 || vec[0].type != IDENT || vec[1].type != IDENT)
-        throw runtime_error("SYNTAX: slowintersect vecname1 vecname2");
-
-    if (list_table.find(vec[0].value) == list_table.end())
-        throw runtime_error(string("The list " + vec[0].value + 
-                                   " doesn't exist"));
-    if (list_table.find(vec[1].value) == list_table.end())
-        throw runtime_error(string("The list " + vec[1].value + 
-                                   " doesn't exist"));
-
-    list_table[vec[0].value] = slow_intersect(list_table[vec[0].value],
-                                           list_table[vec[1].value]);
+void slow_intersect_cmd(){
+	slow_intersect(vector< vector<Token> > vec);
 }
 
 /**
@@ -126,40 +112,25 @@ void slow_intersect_cmd(Lexer lex)
  * process command 'fastintersect vecname1 vecname2'
  * -----------------------------------------------------------------------------
  */
-void fast_intersect_cmd(Lexer lex) 
-{
-    vector<Token> vec = lex.tokenize();
-    if (vec.size() != 2 || vec[0].type != IDENT || vec[1].type != IDENT)
-        throw runtime_error("SYNTAX: fastintersect vecname1 vecname2");
+void fast_intersect_cmd(){
+	fast_intersect(vector< vector<Token> > vec);
+}
 
-    if (list_table.find(vec[0].value) == list_table.end())
-        throw runtime_error(string("The list " + vec[0].value + 
-                                   " doesn't exist"));
-    if (list_table.find(vec[1].value) == list_table.end())
-        throw runtime_error(string("The list " + vec[1].value + 
-                                   " doesn't exist"));
-
-    list_table[vec[0].value] = fast_intersect(list_table[vec[0].value],
-                                           list_table[vec[1].value]);
+/**
+ * -----------------------------------------------------------------------------
+ * process command 'slowunion vecname1 vecname2'
+ * -----------------------------------------------------------------------------
+ */
+void slow_union_outputfile_cmd(){
+	slow_union_outputfile(vector< vector<Token> > vec);
 }
 /**
  * -----------------------------------------------------------------------------
  * process command 'slowunion vecname1 vecname2'
  * -----------------------------------------------------------------------------
  */
-void slow_union_cmd(Lexer lex) 
-{
-    vector<Token> vec = lex.tokenize();
-    if (vec.size() != 2 || vec[0].type != IDENT || vec[1].type != IDENT)
-        throw runtime_error("SYNTAX: slowunion vecname1 vecname2");
-
-    if (list_table.find(vec[0].value) == list_table.end() ||
-        list_table.find(vec[1].value) == list_table.end())
-        throw runtime_error("Give me existing lists only");
-
-    list_table[vec[0].value] = slow_union(list_table[vec[0].value],
-                                           list_table[vec[1].value]);
-    list_table.erase(vec[1].value);
+void slow_union_cmd(){
+	slow_union(vector< vector<Token> > vec);
 }
 
 /**
@@ -167,52 +138,24 @@ void slow_union_cmd(Lexer lex)
  * process command 'fastunion vecname1 vecname2'
  * -----------------------------------------------------------------------------
  */
-void fast_union_cmd(Lexer lex) 
-{
-    vector<Token> vec = lex.tokenize();
-    if (vec.size() != 2 || vec[0].type != IDENT || vec[1].type != IDENT)
-        throw runtime_error("SYNTAX: fastunion vecname1 vecname2");
-
-    if (list_table.find(vec[0].value) == list_table.end() ||
-        list_table.find(vec[1].value) == list_table.end())
-        throw runtime_error("Give me existing lists only");
-
-    list_table[vec[0].value] = fast_union(list_table[vec[0].value],
-                                           list_table[vec[1].value]);
-    list_table.erase(vec[1].value);
+void fast_union_output_cmd(){
+	fast_union_outputfile(vector< vector<Token> > vec);
+}
+/**
+ * -----------------------------------------------------------------------------
+ * process command 'fastunion vecname1 vecname2'
+ * -----------------------------------------------------------------------------
+ */
+void fast_union_cmd(){
+	fast_union(vector< vector<Token> > vec);
 }
 /**
  * -----------------------------------------------------------------------------
  * process command 'loaddb vecname'
  * -----------------------------------------------------------------------------
  */
-void loaddb_cmd(Lexer lex) 
-{
-    Token tok = lex.next_token();
-    if (tok.type != IDENT)
-        throw runtime_error("loaddb filename");
-
-    if (list_table.find(tok.value) != list_table.end())
-        throw runtime_error(tok.value + " already exists");
-
-    vector<Token> tok_vec = lex.tokenize();
-    if (tok_vec.size() == 0)
-        throw runtime_error("Please enter some integers");
-    for (size_t i=0; i < tok_vec.size(); i++)
-        if (tok_vec[i].type != INTEGER)
-            throw runtime_error("Please enter integers only");
-    
-    list_table[tok.value] = loaddb(tok_vec);
-}
-
-/**
- * -----------------------------------------------------------------------------
- *
- * -----------------------------------------------------------------------------
- */
-void _cmd(Lexer lexer) 
-{
-
+void loaddb_cmd(Lexer lex){
+	loaddb(vector<Token> vec);
 }
 
 /**
@@ -228,21 +171,6 @@ void bye(Lexer lexer)
         exit(0);
     }
 }
-
-/**                                                                             
- * -----------------------------------------------------------------------------
- * print the list                                                               
- * -----------------------------------------------------------------------------
- */                                                                             
-void print_list(Node* ptr) {
-	cout << term_cc(CYAN);                                                      
-    while (ptr != NULL) {                                                       
-        cout << ptr->key << " ";                                                
-        ptr = ptr->next;                                                        
-    }                                                                           
-    cout << endl << term_cc();                                                  
-} 
-
 /**
  * -----------------------------------------------------------------------------
  * just print a prompt.
