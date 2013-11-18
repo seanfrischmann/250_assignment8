@@ -2,15 +2,7 @@
 // main.cpp
 // ~~~~~~~~
 // Hung Q. ngo
-// Description: get a user's command of the form
-// - new listname = [list of non-negative integers separated by space]
-// - print listname
-// - sort listname
-// - merge listname1 listname2
-// - remdup listname
-// - keepcommon listname1 listname2
-// - exit
-// their meanings are described in the assignment 6 specification
+// Modified by: Sean Frischmann
 // ****************************************************************************
 #include <iostream>
 #include <map>
@@ -31,13 +23,13 @@ using namespace std;
 typedef void (*cmd_t)(Lexer);
 void loaddb_cmd(Lexer);
 void print_list_cmd(Lexer);
-void sort_list_cmd(Lexer);
 void slow_union_cmd(Lexer);
-void remdup_cmd(Lexer);
+void fast_union_cmd(Lexer);
 void slow_intersect_cmd(Lexer);
+void fast_intersect_cmd(Lexer);
 void bye(Lexer);    // simply quit
 void prompt();
-map<string, Node*> list_table;
+map<string, vector< vector<Token> > > list_table;
 extern const string usage_msg;                                                  
 
 /**
@@ -51,12 +43,12 @@ int main() {
     cmd_map["exit"]  = &bye;
     cmd_map["bye"]   = &bye;
     cmd_map["quit"]  = &bye;
-    cmd_map["new"]   = &loaddb_cmd;
+    cmd_map["loaddb"]   = &loaddb_cmd;
     cmd_map["print"] = &print_list_cmd;
-    cmd_map["merge"] = &slow_union_cmd;
-    cmd_map["sort"]  = &sort_list_cmd;
-    cmd_map["remdup"] = &remdup_cmd;
-    cmd_map["keepcommon"] = &slow_intersect_cmd;
+    cmd_map["slowunion"] = &slow_union_cmd;
+    cmd_map["fastunion"] = &fast_union_cmd;
+    cmd_map["slowintersect"] = &slow_intersect_cmd;
+    cmd_map["fastintersect"] = &fast_intersect_cmd;
 
     cout << term_cc(YELLOW) << usage_msg << endl;
 
@@ -82,30 +74,25 @@ int main() {
 
 /**
  * -----------------------------------------------------------------------------
- * process command 'remdup listname'
+ *
  * -----------------------------------------------------------------------------
  */
-void remdup_cmd(Lexer lex) 
+void _cmd(Lexer lex) 
 {
-    Token tok = lex.next_token();
-    if (tok.type != IDENT || lex.has_more_token())
-        throw runtime_error("SYNTAX: remdup listname");
-    if (list_table.find(tok.value) == list_table.end())
-        throw runtime_error(tok.value + " not defined or already destroyed");
-    list_table[tok.value] = remove_duplicates(list_table[tok.value]);
+
 }
 
 
 /**
  * -----------------------------------------------------------------------------
- * process command 'print listname'
+ * process command 'print vecname'
  * -----------------------------------------------------------------------------
  */
 void print_list_cmd(Lexer lex) 
 {
     Token tok = lex.next_token();
     if (tok.type != IDENT || lex.has_more_token())
-        throw runtime_error("SYNTAX: print listname");
+        throw runtime_error("SYNTAX: print vecname");
     if (list_table.find(tok.value) == list_table.end())
         throw runtime_error(tok.value + " not defined or already destroyed");
     print_list(list_table[tok.value]);
@@ -114,14 +101,14 @@ void print_list_cmd(Lexer lex)
 
 /**
  * -----------------------------------------------------------------------------
- * process command 'keepcommon listname1 listname2'
+ * process command 'slowintersect vecname1 vecname2'
  * -----------------------------------------------------------------------------
  */
 void slow_intersect_cmd(Lexer lex) 
 {
     vector<Token> vec = lex.tokenize();
     if (vec.size() != 2 || vec[0].type != IDENT || vec[1].type != IDENT)
-        throw runtime_error("SYNTAX: keepcommon listname1 listname2");
+        throw runtime_error("SYNTAX: slowintersect vecname1 vecname2");
 
     if (list_table.find(vec[0].value) == list_table.end())
         throw runtime_error(string("The list " + vec[0].value + 
@@ -136,14 +123,35 @@ void slow_intersect_cmd(Lexer lex)
 
 /**
  * -----------------------------------------------------------------------------
- * process command 'merge listname1 listname2'
+ * process command 'fastintersect vecname1 vecname2'
+ * -----------------------------------------------------------------------------
+ */
+void fast_intersect_cmd(Lexer lex) 
+{
+    vector<Token> vec = lex.tokenize();
+    if (vec.size() != 2 || vec[0].type != IDENT || vec[1].type != IDENT)
+        throw runtime_error("SYNTAX: fastintersect vecname1 vecname2");
+
+    if (list_table.find(vec[0].value) == list_table.end())
+        throw runtime_error(string("The list " + vec[0].value + 
+                                   " doesn't exist"));
+    if (list_table.find(vec[1].value) == list_table.end())
+        throw runtime_error(string("The list " + vec[1].value + 
+                                   " doesn't exist"));
+
+    list_table[vec[0].value] = fast_intersect(list_table[vec[0].value],
+                                           list_table[vec[1].value]);
+}
+/**
+ * -----------------------------------------------------------------------------
+ * process command 'slowunion vecname1 vecname2'
  * -----------------------------------------------------------------------------
  */
 void slow_union_cmd(Lexer lex) 
 {
     vector<Token> vec = lex.tokenize();
     if (vec.size() != 2 || vec[0].type != IDENT || vec[1].type != IDENT)
-        throw runtime_error("SYNTAX: keepcommon listname1 listname2");
+        throw runtime_error("SYNTAX: slowunion vecname1 vecname2");
 
     if (list_table.find(vec[0].value) == list_table.end() ||
         list_table.find(vec[1].value) == list_table.end())
@@ -156,14 +164,33 @@ void slow_union_cmd(Lexer lex)
 
 /**
  * -----------------------------------------------------------------------------
- * process command 'new listname 123 345 345'
+ * process command 'fastunion vecname1 vecname2'
+ * -----------------------------------------------------------------------------
+ */
+void fast_union_cmd(Lexer lex) 
+{
+    vector<Token> vec = lex.tokenize();
+    if (vec.size() != 2 || vec[0].type != IDENT || vec[1].type != IDENT)
+        throw runtime_error("SYNTAX: fastunion vecname1 vecname2");
+
+    if (list_table.find(vec[0].value) == list_table.end() ||
+        list_table.find(vec[1].value) == list_table.end())
+        throw runtime_error("Give me existing lists only");
+
+    list_table[vec[0].value] = fast_union(list_table[vec[0].value],
+                                           list_table[vec[1].value]);
+    list_table.erase(vec[1].value);
+}
+/**
+ * -----------------------------------------------------------------------------
+ * process command 'loaddb vecname'
  * -----------------------------------------------------------------------------
  */
 void loaddb_cmd(Lexer lex) 
 {
     Token tok = lex.next_token();
     if (tok.type != IDENT)
-        throw runtime_error("new listname [list of int]");
+        throw runtime_error("loaddb filename");
 
     if (list_table.find(tok.value) != list_table.end())
         throw runtime_error(tok.value + " already exists");
@@ -180,26 +207,12 @@ void loaddb_cmd(Lexer lex)
 
 /**
  * -----------------------------------------------------------------------------
- * process command 'sort listname'
+ *
  * -----------------------------------------------------------------------------
  */
-void sort_list_cmd(Lexer lexer) 
+void _cmd(Lexer lexer) 
 {
-    Token tok = lexer.next_token();
 
-    if (tok.type != IDENT || lexer.has_more_token())
-        throw runtime_error("Syntax error: sort <listname>");
-
-    if (list_table.find(tok.value) == list_table.end())
-        throw runtime_error("List not found");
-
-    Node* my_list = list_table[tok.value];
-    cout << term_cc(CYAN) << "BEFORE: " << term_cc(); 
-    print_list(my_list);
-    my_list = sort_list(my_list);
-    cout << term_cc(CYAN) << "AFTER: " << term_cc(); 
-    print_list(my_list);
-    list_table[tok.value] = my_list;
 }
 
 /**
@@ -221,8 +234,8 @@ void bye(Lexer lexer)
  * print the list                                                               
  * -----------------------------------------------------------------------------
  */                                                                             
-void print_list(Node* ptr) {                                                    
-    cout << term_cc(CYAN);                                                      
+void print_list(Node* ptr) {
+	cout << term_cc(CYAN);                                                      
     while (ptr != NULL) {                                                       
         cout << ptr->key << " ";                                                
         ptr = ptr->next;                                                        
