@@ -29,12 +29,12 @@ using namespace std;
 // prototypes, typedefs, and global variables
 // -----------------------------------------------------------------------------
 typedef void (*cmd_t)(Lexer);
-void new_list_cmd(Lexer);
+void loaddb_cmd(Lexer);
 void print_list_cmd(Lexer);
 void sort_list_cmd(Lexer);
-void merge_list_cmd(Lexer);
+void slow_union_cmd(Lexer);
 void remdup_cmd(Lexer);
-void keep_common_cmd(Lexer);
+void slow_intersect_cmd(Lexer);
 void bye(Lexer);    // simply quit
 void prompt();
 map<string, Node*> list_table;
@@ -51,12 +51,12 @@ int main() {
     cmd_map["exit"]  = &bye;
     cmd_map["bye"]   = &bye;
     cmd_map["quit"]  = &bye;
-    cmd_map["new"]   = &new_list_cmd;
+    cmd_map["new"]   = &loaddb_cmd;
     cmd_map["print"] = &print_list_cmd;
-    cmd_map["merge"] = &merge_list_cmd;
+    cmd_map["merge"] = &slow_union_cmd;
     cmd_map["sort"]  = &sort_list_cmd;
     cmd_map["remdup"] = &remdup_cmd;
-    cmd_map["keepcommon"] = &keep_common_cmd;
+    cmd_map["keepcommon"] = &slow_intersect_cmd;
 
     cout << term_cc(YELLOW) << usage_msg << endl;
 
@@ -117,7 +117,7 @@ void print_list_cmd(Lexer lex)
  * process command 'keepcommon listname1 listname2'
  * -----------------------------------------------------------------------------
  */
-void keep_common_cmd(Lexer lex) 
+void slow_intersect_cmd(Lexer lex) 
 {
     vector<Token> vec = lex.tokenize();
     if (vec.size() != 2 || vec[0].type != IDENT || vec[1].type != IDENT)
@@ -130,7 +130,7 @@ void keep_common_cmd(Lexer lex)
         throw runtime_error(string("The list " + vec[1].value + 
                                    " doesn't exist"));
 
-    list_table[vec[0].value] = keep_common(list_table[vec[0].value],
+    list_table[vec[0].value] = slow_intersect(list_table[vec[0].value],
                                            list_table[vec[1].value]);
 }
 
@@ -139,7 +139,7 @@ void keep_common_cmd(Lexer lex)
  * process command 'merge listname1 listname2'
  * -----------------------------------------------------------------------------
  */
-void merge_list_cmd(Lexer lex) 
+void slow_union_cmd(Lexer lex) 
 {
     vector<Token> vec = lex.tokenize();
     if (vec.size() != 2 || vec[0].type != IDENT || vec[1].type != IDENT)
@@ -149,7 +149,7 @@ void merge_list_cmd(Lexer lex)
         list_table.find(vec[1].value) == list_table.end())
         throw runtime_error("Give me existing lists only");
 
-    list_table[vec[0].value] = merge_lists(list_table[vec[0].value],
+    list_table[vec[0].value] = slow_union(list_table[vec[0].value],
                                            list_table[vec[1].value]);
     list_table.erase(vec[1].value);
 }
@@ -159,7 +159,7 @@ void merge_list_cmd(Lexer lex)
  * process command 'new listname 123 345 345'
  * -----------------------------------------------------------------------------
  */
-void new_list_cmd(Lexer lex) 
+void loaddb_cmd(Lexer lex) 
 {
     Token tok = lex.next_token();
     if (tok.type != IDENT)
@@ -175,7 +175,7 @@ void new_list_cmd(Lexer lex)
         if (tok_vec[i].type != INTEGER)
             throw runtime_error("Please enter integers only");
     
-    list_table[tok.value] = new_list(tok_vec);
+    list_table[tok.value] = loaddb(tok_vec);
 }
 
 /**
