@@ -1,10 +1,9 @@
 // ============================================================================ 
 // Lexer.h
 // ~~~~~~~
-// author    : Hung Q. Ngo
+// Hung Q. Ngo
 // - a simple lexical analyzer
-// - 6 types of tokens are accepted: identifier, string inside "", 
-//                                   delimiter, operator, number
+// - 2 types of tokens are accepted: IDENT and INTEGER
 // ============================================================================ 
 
 #ifndef LEXER_H_
@@ -15,12 +14,8 @@
 #include <set>
 
 enum token_types_t { 
-    IDENT,  // a sequence of alphanumeric characters and _, starting with alpha
-    STRING, // sequence of characters between " ", no escape
-    DELIM,  // {}()[]
-    OPERATOR, // + - / * =
-    COMMENT,  // # follows by any characters to the end of line/file
-    NUMBER,   // a series of digits, or digits.digits, or .digits
+    IDENT,   // a sequence of alphanumeric characters and _, starting with alpha
+    INTEGER, // a series of digits
     ENDTOK,   // end of string/file, no more token
     ERRTOK    // unrecognized token
 };

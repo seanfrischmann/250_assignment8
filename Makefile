@@ -7,7 +7,7 @@ CFLAGS = -Wall -pedantic -ansi $(DEBUG)
 LFLAGS = -Wall $(DEBUG)
 
 main: $(OBJS)
-	$(CC) $(CFLAGS) $(OBJS) -o listmanip
+	$(CC) $(CFLAGS) $(OBJS) -o cstore
 
 main.o: main.cpp Lexer.h error_handling.h listmanip.h term_control.h
 	$(CC) -c $(CFLAGS) main.cpp

@@ -2,7 +2,7 @@
 // Lexer.cpp
 // ~~~~~~~~~
 // Hung Q. Ngo
-// - implementation of the Lexer interface
+// - implementation of the Lexer interface, simplified
 // ============================================================================
 
 #include <iostream>
@@ -40,69 +40,24 @@ Token Lexer::next_token()
 
     if (has_more_token()) { // cur_pos is at next non-separator char
         last = cur_pos++;   // hence, input_str[last] is a non-separator
-        switch (input_str[last]) {
-            case '+': case '-': case '*': case '/': case '=':
-                ret.type = OPERATOR;
-                ret.value = input_str[last];
-                break;
-            case '(': case ')': case '[': case ']': case '{': case '}':
-                ret.type = DELIM;
-                ret.value = input_str[last];
-                break;
-            case '"': // scanning for STRING
-                while(cur_pos < input_str.length() && input_str[cur_pos] != '"')
-                    cur_pos++;
-                if (cur_pos < input_str.length()) {
-                    ret.type = STRING;
-                    ret.value = input_str.substr(last+1, cur_pos-last-1);
-                    cur_pos++;        // move past the closing "
-                } else {
-                    ret.type = ERRTOK;
-                    ret.value = '"';  
-                    cur_pos = last+1; // backtrack, move past the errorneous "
-                }
-                break;
-            case '#': // scanning to '\n' or end of input
-                while (cur_pos < input_str.length() 
-                       && input_str[cur_pos] != '\n')
-                    cur_pos++;
-                ret.type = COMMENT;
-                ret.value = input_str.substr(last, cur_pos-last);
-                break;
-            default:
-                if (isdigit(input_str[last])) { 
-                    // scanning for NUMBER
-                    move_through_digits();
-                    if (input_str[cur_pos] == '.') {
-                        cur_pos++;
-                        move_through_digits();
-                    }
-                    ret.type  = NUMBER;
-                    ret.value = input_str.substr(last, cur_pos-last);
-                } else if (input_str[last] == '.') {
-                    move_through_digits();
-                    if (cur_pos == last+1) { // there was a '.' but no digit
-                        ret.type = ERRTOK;
-                        ret.value = input_str[last];
-                    } else {
-                        ret.type  = NUMBER;
-                        ret.value = input_str.substr(last, cur_pos-last);
-                    }
-                } else if (isalpha(input_str[last]) || input_str[last] == '_') {
-                    // sanning for IDENT, can start with alpha or _
-                    while ( cur_pos < input_str.length() &&
-                            (isalnum(input_str[cur_pos]) ||
-                            input_str[cur_pos] == '_') )
-                        cur_pos++;
-                    ret.type  = IDENT;
-                    ret.value = input_str.substr(last, cur_pos-last);
-                } else { 
-                    // unrecognized character, just an error token here
-                    ret.type = ERRTOK;
-                    ret.value = input_str[last];
-                }
-                break;        
-        } // end switch()
+        if (isdigit(input_str[last])) { 
+            // scanning for INTEGER
+            move_through_digits();
+            ret.type = INTEGER;
+            ret.value = input_str.substr(last, cur_pos-last);
+        } else if (isalpha(input_str[last]) || input_str[last] == '_') {
+            // sanning for IDENT, can start with alpha or _
+            while ( cur_pos < input_str.length() &&
+                    (isalnum(input_str[cur_pos]) ||
+                     input_str[cur_pos] == '_') )
+                cur_pos++;
+            ret.type  = IDENT;
+            ret.value = input_str.substr(last, cur_pos-last);
+        } else { 
+            // unrecognized character, just an error token here
+            ret.type = ERRTOK;
+            ret.value = input_str[last];
+        }
     } // end if (has more token())
     return ret;
 }
