@@ -205,36 +205,37 @@ void fast_intersect(const vector< vector<int> >& contents, bool outputfile){
 	int max_set;
 	bool end_search = false;
 	while(current_index < index.at(current_set)){
+		size_t number_found = 0;
 		for(size_t i=0; i < contents.size(); i++){
 			if(i != current_set){
-				int value = binary_search(contents.at(i), current_element);
-				cout << value << endl;
-				if(value >= index.at(i)){
+				size_t value = binary_search(contents.at(i), current_element);
+				if((value >= index.at(i)) || (current_index >= index.at(i))){
 					end_search = true;
 					break;
 				}
-				cout << value << endl;
 				if(contents.at(i).at(value) != current_element){
-					if(contents.at(i).at(value) > max_in_others){
+					if(contents.at(i).at(value) >= max_in_others){
 						max_in_others = contents.at(i).at(value);
 						max_set = i;
 					}
+				}else{
+					number_found++;
 				}
-				cout << value << endl;
 			}
 		}
 		if(end_search){
 			break;
 		}
-		if(max_in_others == current_element){
+		if((max_in_others == current_element) || (number_found == contents.size()-1)){
 			ostringstream ostr;
 			ostr << current_element;
 			output += ostr.str();
 			output += " ";
 			current_index++;
-			cout << current_index << endl << current_set << endl;
+			if(current_index >= index.at(current_set)){
+				break;
+			}
 			current_element = contents.at(current_set).at(current_index);
-			cout << current_element << endl;
 		}else{
 			current_element = max_in_others;
 			current_set = max_set;
