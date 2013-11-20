@@ -133,11 +133,48 @@ void slow_intersect(const vector< vector<int> >& contents, bool outputfile){
 
 /**
  * -----------------------------------------------------------------------------
- *
+ * This method combines all the contents of the vector into one line and either
+ * prints it in the console or writes it to a file.
  * -----------------------------------------------------------------------------
  */
 void slow_union(const vector< vector<int> >& contents, bool outputfile){
 	string output;
+	vector<int> output_vec;
+	int last;
+	for(size_t i=0; i<contents.size(); i++){
+		for(size_t j=0; j<contents.at(i).size(); j++){
+			output_vec.push_back(contents.at(i).at(j));
+		}
+	}
+	sort(output_vec.begin(), output_vec.end());
+	for(size_t i=0; i<output_vec.size(); i++){
+		if(last != output_vec.at(i)){
+			ostringstream ostr;
+			ostr << output_vec.at(i);
+			output += ostr.str();
+			output += " ";
+		}
+		last = output_vec.at(i);
+	}
+	if(outputfile){
+		cout << "Saved output to: " << "slow_union_outputfile.txt" << endl;
+		ofstream myfile;
+		myfile.open("slow_union_outputfile.txt");
+		myfile << output;
+		myfile.close();
+	}else{
+		cout << output << endl;
+	}
+
+}
+
+/**
+ * -----------------------------------------------------------------------------
+ *
+ * -----------------------------------------------------------------------------
+ */
+void fast_intersect(const vector< vector<int> >& contents, bool outputfile){
+	
 }
 
 /**

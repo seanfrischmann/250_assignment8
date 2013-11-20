@@ -2,7 +2,7 @@
 // main.cpp
 // ~~~~~~~~
 // Hung Q. ngo
-// Modified by: Sean Frischmann
+// Sean Frischmann
 // ****************************************************************************
 #include <iostream>
 #include <map>
@@ -27,8 +27,7 @@ void slow_union_cmd(Lexer);
 //void fast_union_outputfile_cmd(Lexer);
 //void fast_union_cmd(Lexer);
 void slow_intersect_cmd(Lexer);
-//void fast_intersect_outputfile_cmd(Lexer);
-//void fast_intersect_cmd(Lexer);
+void fast_intersect_cmd(Lexer);
 void bye(Lexer);    // simply quit
 void prompt();
 extern const string usage_msg;
@@ -50,8 +49,7 @@ int main() {
     //cmd_map["fastunion"] = &fast_union_cmd;
     //cmd_map["fastunion outputfile"] = &fast_union_outputfile_cmd;
     cmd_map["slowintersect"] = &slow_intersect_cmd;
-    //cmd_map["fastintersect"] = &fast_intersect_cmd;
-    //cmd_map["fastintersect outputfile"] = &fast_intersect_outputfile_cmd;
+    cmd_map["fastintersect"] = &fast_intersect_cmd;
 
     cout << term_cc(YELLOW) << usage_msg << endl;
 
@@ -73,15 +71,6 @@ int main() {
     }
     return 0;
 
-}
-
-/**
- * -----------------------------------------------------------------------------
- *
- * -----------------------------------------------------------------------------
- */
-/*void fast_intersect_outputfile_cmd(Lexer lex){
-	fast_intersect_outputfile(vector< vector<Token> > vec);
 }
 
 /**
@@ -111,17 +100,33 @@ void slow_intersect_cmd(Lexer lex){
 
 /**
  * -----------------------------------------------------------------------------
- * process command 'fastintersect vecname1 vecname2'
+ * process command 'fastintersect'
  * -----------------------------------------------------------------------------
  */
-/*void fast_intersect_cmd(Lexer lex){
-	fast_intersect(vector< vector<Token> > vec);
+void fast_intersect_cmd(Lexer lex){
+	vector<Token> vec= lex.tokenize();
+	bool outputfile = false, skip = true;
+	if(input.empty()){
+		skip = false;
+		cerr << "Nothing to intersect" << endl;
+	}
+	if(!vec.empty()){
+		if(vec.at(0).value == "outputfile"){
+			outputfile = true;
+		}else{
+			cerr << "Error: wrong command" << endl;
+			skip = false;
+		}
+	}
+	if(skip){
+		fast_intersect(input, outputfile);
+	}
 }
 
 
 /**
  * -----------------------------------------------------------------------------
- * process command 'slowunion vecname1 vecname2'
+ * process command 'slowunion'
  * -----------------------------------------------------------------------------
  */
 void slow_union_cmd(Lexer lex){
@@ -129,7 +134,7 @@ void slow_union_cmd(Lexer lex){
 	bool outputfile = false, skip = true;
 	if(input.empty()){
 		skip = false;
-		cerr << "Nothing to intersect" << endl;
+		cerr << "Nothing to union" << endl;
 	}
 	if(!vec.empty()){
 		if(vec.at(0).value == "outputfile"){
