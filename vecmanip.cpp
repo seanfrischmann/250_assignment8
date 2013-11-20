@@ -106,6 +106,7 @@ void slow_intersect(const vector< vector<int> >& contents, bool outputfile){
 				for(size_t k=0; k<contents.at(j).size(); k++){
 					if(contents.at(j).at(k) == number_to_compare){
 						occurs = true;
+						break;
 					}
 				}
 				if(occurs){
@@ -173,42 +174,67 @@ void slow_union(const vector< vector<int> >& contents, bool outputfile){
  *
  * -----------------------------------------------------------------------------
  */
+size_t binary_search(const vector<int>& sorted_vec, const int& key){
+	size_t mid, left=0;
+	size_t right=sorted_vec.size()-1;
+	while(left<right){
+		mid=left + (right - left) / 2;
+		if(sorted_vec.at(mid) < key){
+			left = mid +1;
+		}
+		if(sorted_vec.at(mid) > key){
+			right = mid-1;
+		}
+		if(sorted_vec.at(mid) == key){
+			return mid;
+		}
+	}
+	return left;
+}
+
 void fast_intersect(const vector< vector<int> >& contents, bool outputfile){
 	string output;
 	size_t current_index=0;
 	vector<size_t> index;
 	for(size_t i=0; i<contents.size(); i++){
 		index.push_back(contents.at(i).size());
-		cout << contents.at(i).size() << endl;
 	}
 	size_t current_set=0;
 	int current_element=contents.at(current_set).at(current_index);
 	int max_in_others=current_element;
 	int max_set;
-	while(current_index != index.at(current_set)){
+	bool end_search = false;
+	while(current_index < index.at(current_set)){
 		for(size_t i=0; i < contents.size(); i++){
 			if(i != current_set){
-				for(size_t j=0; j<
-				if((contents.at(i).at(current_index) >= current_element) && 
-						(contents.at(i).at(current_index) > max_in_others))
-				{
-					max_in_others = contents.at(i).at(current_index);
-					max_set=i;
+				int value = binary_search(contents.at(i), current_element);
+				cout << value << endl;
+				if(value >= index.at(i)){
+					end_search = true;
+					break;
 				}
+				cout << value << endl;
+				if(contents.at(i).at(value) != current_element){
+					if(contents.at(i).at(value) > max_in_others){
+						max_in_others = contents.at(i).at(value);
+						max_set = i;
+					}
+				}
+				cout << value << endl;
 			}
 		}
-		cout << current_index << endl;
-		cout << index.at(current_set) << endl;
-		cout << current_set << endl;
-		cout << max_set << endl;
-		cout << max_in_others << endl;
-		cout << current_element << endl;
+		if(end_search){
+			break;
+		}
 		if(max_in_others == current_element){
 			ostringstream ostr;
 			ostr << current_element;
 			output += ostr.str();
 			output += " ";
 			current_index++;
+			cout << current_index << endl << current_set << endl;
+			current_element = contents.at(current_set).at(current_index);
+			cout << current_element << endl;
 		}else{
 			current_element = max_in_others;
 			current_set = max_set;
