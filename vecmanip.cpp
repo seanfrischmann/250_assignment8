@@ -174,7 +174,56 @@ void slow_union(const vector< vector<int> >& contents, bool outputfile){
  * -----------------------------------------------------------------------------
  */
 void fast_intersect(const vector< vector<int> >& contents, bool outputfile){
-	
+	string output;
+	size_t current_index=0;
+	vector<size_t> index;
+	for(size_t i=0; i<contents.size(); i++){
+		index.push_back(contents.at(i).size());
+		cout << contents.at(i).size() << endl;
+	}
+	size_t current_set=0;
+	int current_element=contents.at(current_set).at(current_index);
+	int max_in_others=current_element;
+	int max_set;
+	while(current_index != index.at(current_set)){
+		for(size_t i=0; i < contents.size(); i++){
+			if(i != current_set){
+				for(size_t j=0; j<
+				if((contents.at(i).at(current_index) >= current_element) && 
+						(contents.at(i).at(current_index) > max_in_others))
+				{
+					max_in_others = contents.at(i).at(current_index);
+					max_set=i;
+				}
+			}
+		}
+		cout << current_index << endl;
+		cout << index.at(current_set) << endl;
+		cout << current_set << endl;
+		cout << max_set << endl;
+		cout << max_in_others << endl;
+		cout << current_element << endl;
+		if(max_in_others == current_element){
+			ostringstream ostr;
+			ostr << current_element;
+			output += ostr.str();
+			output += " ";
+			current_index++;
+		}else{
+			current_element = max_in_others;
+			current_set = max_set;
+			current_index++;
+		}
+	}
+	if(outputfile){
+		cout << "Saved output to: " << "fast_intersect_outputfile.txt" << endl;
+		ofstream myfile;
+		myfile.open("fast_intersect_outputfile.txt");
+		myfile << output;
+		myfile.close();
+	}else{
+		cout << output << endl;
+	}
 }
 
 /**
