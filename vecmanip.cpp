@@ -9,6 +9,7 @@
 #include <string>
 #include <stdexcept>
 #include <sstream>
+#include <queue>
 #include <fstream>
 #include <algorithm>
 #include <stdlib.h>
@@ -171,7 +172,8 @@ void slow_union(const vector< vector<int> >& contents, bool outputfile){
 
 /**
  * -----------------------------------------------------------------------------
- *
+ * This method finds the numbers common in all the vector in a faster approach
+ * than the above method.
  * -----------------------------------------------------------------------------
  */
 size_t binary_search(const vector<int>& sorted_vec, const int& key){
@@ -255,6 +257,49 @@ void fast_intersect(const vector< vector<int> >& contents, bool outputfile){
 
 /**
  * -----------------------------------------------------------------------------
- *
+ * In this method we are combining the elements from all the vectors faster than
+ * in slow_union above.
  * -----------------------------------------------------------------------------
  */
+
+void fast_union(const vector< vector<int> >& contents, bool outputfile){
+	priority_queue<int, vector<int>, greater<int> > output_queue;
+	int last;
+	for(size_t i=0; i<contents.size(); i++){
+		for(size_t j=0; j<contents.at(i).size(); j++){
+			output_queue.push(contents.at(i).at(j));
+		}
+	}
+	if(outputfile){
+		cout << "Saved output to: " << "fast_union_outputfile.txt" << endl;
+		ofstream myfile;
+		myfile.open("fast_union_outputfile.txt");
+		myfile << output_queue.top();
+		last = output_queue.top();
+		output_queue.pop();
+		while(!output_queue.empty()){
+			if(output_queue.top() == last){
+				output_queue.pop();
+			}else{
+				myfile << " " << output_queue.top();
+				last = output_queue.top();
+				output_queue.pop();
+			}
+		}
+		myfile.close();
+	}else{
+		cout << output_queue.top();
+		last = output_queue.top();
+		output_queue.pop();
+		while(!output_queue.empty()){
+			if(output_queue.top() == last){
+				output_queue.pop();
+			}else{
+				cout << " " << output_queue.top();
+				last = output_queue.top();
+				output_queue.pop();
+			}
+		}
+		cout << endl;
+	}
+}

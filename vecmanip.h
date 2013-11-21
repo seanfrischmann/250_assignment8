@@ -1,5 +1,6 @@
 // ============================================================================ 
 // // vecmanip.h
+// // Sean Frischmann
 // // ~~~~~~~
 // // *****************************************************************************
 //
@@ -12,10 +13,11 @@
 using namespace std;
 //
 // // *****************************************************************************
-// // below are the functions you are asked to implement
+// // Below are functions called in main.cpp and defined in vecmanip.cpp
 // // *****************************************************************************
 vector< vector<int> > loaddb(const vector<Token>& tok_vec);
 void slow_intersect(const vector< vector<int> >& contents, bool outputfile);
 void slow_union(const vector< vector<int> >& contents, bool outputfile);
 void fast_intersect(const vector< vector<int> >& contents, bool outputfile);
+void fast_union(const vector< vector<int> >& contents, bool outputfile);
 #endif

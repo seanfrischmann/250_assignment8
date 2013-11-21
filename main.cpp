@@ -24,8 +24,7 @@ using namespace std;
 typedef void (*cmd_t)(Lexer);
 void loaddb_cmd(Lexer);
 void slow_union_cmd(Lexer);
-//void fast_union_outputfile_cmd(Lexer);
-//void fast_union_cmd(Lexer);
+void fast_union_cmd(Lexer);
 void slow_intersect_cmd(Lexer);
 void fast_intersect_cmd(Lexer);
 void bye(Lexer);    // simply quit
@@ -46,8 +45,7 @@ int main() {
     cmd_map["quit"]  = &bye;
     cmd_map["loaddb"]   = &loaddb_cmd;
     cmd_map["slowunion"] = &slow_union_cmd;
-    //cmd_map["fastunion"] = &fast_union_cmd;
-    //cmd_map["fastunion outputfile"] = &fast_union_outputfile_cmd;
+    cmd_map["fastunion"] = &fast_union_cmd;
     cmd_map["slowintersect"] = &slow_intersect_cmd;
     cmd_map["fastintersect"] = &fast_intersect_cmd;
 
@@ -149,21 +147,30 @@ void slow_union_cmd(Lexer lex){
 	}
 }
 
+
 /**
  * -----------------------------------------------------------------------------
- * process command 'fastunion vecname1 vecname2'
+ * process command 'fastunion'
  * -----------------------------------------------------------------------------
  */
-/*void fast_union_output_cmd(Lexer lex){
-	fast_union_outputfile(vector< vector<Token> > vec);
-}
-/**
- * -----------------------------------------------------------------------------
- * process command 'fastunion vecname1 vecname2'
- * -----------------------------------------------------------------------------
- */
-/*void fast_union_cmd(Lexer lex){
-	fast_union(vector< vector<Token> > vec);
+void fast_union_cmd(Lexer lex){
+	vector<Token> vec= lex.tokenize();
+	bool outputfile = false, skip = true;
+	if(input.empty()){
+		skip = false;
+		cerr << "Nothing to union" << endl;
+	}
+	if(!vec.empty()){
+		if(vec.at(0).value == "outputfile"){
+			outputfile = true;
+		}else{
+			cerr << "Error: wrong command" << endl;
+			skip = false;
+		}
+	}
+	if(skip){
+		fast_union(input, outputfile);
+	}
 }
 /**
  * -----------------------------------------------------------------------------
