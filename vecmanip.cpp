@@ -125,11 +125,21 @@ void slow_intersect(const vector< vector<int> >& contents, bool outputfile){
 			cout << "Saved output to: " << "slow_intersect_outputfile.txt" << endl;
 			ofstream myfile;
 			myfile.open("slow_intersect_outputfile.txt");
-			myfile << output;
+			if(output == ""){
+				myfile << "There are no intersections";
+			}else{
+				myfile << output;
+			}
 			myfile.close();
 		}else{
-			cout << output << endl;
+			if(output == ""){
+				cout << "There are no intersections" << endl;
+			}else{
+				cout << output << endl;
+			}
 		}
+	}else{
+		cerr << "There is only one line, therefore nothing to intersect" << endl;
 	}
 }
 
@@ -149,11 +159,16 @@ void slow_union(const vector< vector<int> >& contents, bool outputfile){
 		}
 	}
 	sort(output_vec.begin(), output_vec.end());
-	for(size_t i=0; i<output_vec.size(); i++){
+	ostringstream ostr;
+	ostr << output_vec.at(0);
+	output += ostr.str();
+	output += " ";
+	last = output_vec.at(0);
+	for(size_t i=1; i<output_vec.size(); i++){
 		if(last != output_vec.at(i)){
-			ostringstream ostr;
-			ostr << output_vec.at(i);
-			output += ostr.str();
+			ostringstream ostr1;
+			ostr1 << output_vec.at(i);
+			output += ostr1.str();
 			output += " ";
 		}
 		last = output_vec.at(i);
@@ -181,6 +196,9 @@ size_t binary_search(const vector<int>& sorted_vec, const int& key){
 	size_t right=sorted_vec.size()-1;
 	while(left<right){
 		mid=left + (right - left) / 2;
+		if(mid > sorted_vec.size()){
+			return sorted_vec.size()+1;
+		}
 		if(sorted_vec.at(mid) < key){
 			left = mid +1;
 		}
@@ -222,6 +240,7 @@ void fast_intersect(const vector< vector<int> >& contents, bool outputfile){
 					}
 				}else{
 					number_found++;
+					max_in_others = current_element;
 				}
 			}
 		}
@@ -248,10 +267,18 @@ void fast_intersect(const vector< vector<int> >& contents, bool outputfile){
 		cout << "Saved output to: " << "fast_intersect_outputfile.txt" << endl;
 		ofstream myfile;
 		myfile.open("fast_intersect_outputfile.txt");
-		myfile << output;
+		if(output == ""){
+			myfile << "There are no intersections";
+		}else{
+			myfile << output;
+		}
 		myfile.close();
 	}else{
-		cout << output << endl;
+		if(output == ""){
+			cout << "There are no intersections" << endl;
+		}else{
+			cout << output << endl;
+		}
 	}
 }
 
